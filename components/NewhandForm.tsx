@@ -12,28 +12,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
-
-const formSchema = z.object({
-  heroPosition: z.string().min(2, "Indique une position"),
-  stackSize: z.string().min(1, "Stack requis"),
-  blindLevel: z.string().optional(),
-  action: z.string().min(5, "Décris l'action"),
-  villainInfo: z.string().optional(),
-  result: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { useAuth } from "./providers/auth-provider";
+import { HandValues, HandFormSchema } from "@/lib/validations/schema";
 
 export function NewHandForm({ groupId }: { groupId: string }) {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const { data: session } = useAuth();
+  const form = useForm<HandValues>({
+    resolver: zodResolver(HandFormSchema),
     defaultValues: {
       heroPosition: "",
       stackSize: "",
@@ -47,16 +37,22 @@ export function NewHandForm({ groupId }: { groupId: string }) {
 
   const addHand = useMutation(api.Hands.createHand);
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: HandValues) => {
     try {
+      if (!session?.session?.token) {
+        toast.error("Non authentifié");
+        return;
+      }
+
       await addHand({
-        userId: "TODO", // You'll need to get the actual user ID
+        userId: session.user.id as Id<"users">,
         groupId: groupId as Id<"groups">,
         stackSize: Number(values.stackSize),
         actions: [values.action],
         vilainInfo: values.villainInfo,
         result: values.result,
         notes: values.notes,
+        sessionToken: session.session.token,
       });
       form.reset();
       toast.success("Main enregistrée");

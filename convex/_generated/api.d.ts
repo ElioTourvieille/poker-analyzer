@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as Groups from "../Groups.js";
 import type * as Hands from "../Hands.js";
+import type * as betterAuth from "../betterAuth.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -27,6 +28,7 @@ import type * as Hands from "../Hands.js";
 declare const fullApi: ApiFromModules<{
   Groups: typeof Groups;
   Hands: typeof Hands;
+  betterAuth: typeof betterAuth;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

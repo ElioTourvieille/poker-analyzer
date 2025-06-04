@@ -1,17 +1,22 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 export const createGroup = mutation({
   args: {
     name: v.string(),
     userId: v.id("users"),
+    sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await ctx.auth.getUserIdentity();
-    if (!userId) {
+    const session = await ctx.runQuery(internal.betterAuth.getSession, {
+      sessionToken: args.sessionToken,
+    });
+
+    if (!session) {
       throw new Error("Unauthorized");
     }
+
     const groupId = await ctx.db.insert("groups", {
       name: args.name,
       owner: args.userId,
@@ -28,14 +33,22 @@ export const createGroup = mutation({
 });
 
 export const getGroupsForUser = query({
-    args: { userId: v.id("users") },
-    handler: async (ctx, args) => {
-      const user = await ctx.auth.getUserIdentity();
-      if (!user) throw new Error("Not authenticated");
-  
-      return await ctx.db
-        .query("groups")
-        .withIndex("by_member", q => q.eq("members", [user.subject as Id<"users">]))
-        .collect();
-    },
-  });
+  args: { 
+    userId: v.id("users"),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.runQuery(internal.betterAuth.getSession, {
+      sessionToken: args.sessionToken,
+    });
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    return await ctx.db
+      .query("groups")
+      .withIndex("by_member", q => q.eq("members", [args.userId]))
+      .collect();
+  },
+});
