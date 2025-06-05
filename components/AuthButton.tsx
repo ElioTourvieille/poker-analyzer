@@ -1,21 +1,23 @@
-import { auth } from "@/lib/auth";
+"use client";
 
-// components/AuthButton.tsx
-import Link from "next/link";
-import { getUser } from "@/lib/auth-client";
-import { Button } from "./ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { authClient, useSession } from "@/lib/auth-client";
 import { LogOutIcon } from "lucide-react";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
-export default async function AuthButton() {
-  const user = await getUser();
+export default function AuthButton() {
+  const { data } = useSession();
 
-  if (!user) {
+  if (!data?.user) {
     return (
-      <Button>
+      <Button asChild>
         <Link href="/auth/signup">Connexion</Link>
       </Button>
     );
@@ -26,27 +28,23 @@ export default async function AuthButton() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline">
           <Avatar>
-            <AvatarFallback>{user.email[0].toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{data.user.email[0].toUpperCase()}</AvatarFallback>
           </Avatar>
-          <p className="text-sm font-medium">{user.name}</p>
+          <p className="text-sm font-medium">{data.user.name}</p>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem asChild>
-          <form>
-            <button className="flex items-center gap-2 w-full" formAction={async () => {
-              "use server";
-
-              await auth.api.signOut({
-                headers: await headers()
-              })
-
-              redirect("/auth/signin")
-            }}>
-              <LogOutIcon className="mr-2 size-4" />
-              <span>Déconnexion</span>
-            </button>
-          </form>
+          <button
+            className="flex items-center gap-2 w-full"
+            onClick={() => {
+              authClient.signOut();
+              window.location.href = "/auth/signin";
+            }}
+          >
+            <LogOutIcon className="mr-2 size-4" />
+            <span>Déconnexion</span>
+          </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
