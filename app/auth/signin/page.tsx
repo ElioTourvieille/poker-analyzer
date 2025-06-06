@@ -13,7 +13,7 @@ export default function SignupPage() {
                 <SignupForm />
             </CardContent>
             <CardFooter>
-                <p className='text-sm text-muted-foreground'>Vous n'avez pas de compte ?{" "}
+                <p className='text-sm text-muted-foreground'>Vous n&apos;avez pas de compte ?{" "}
                     <Link href="/auth/signup" className='text-blue-500 hover:underline'>
                         Inscription
                     </Link>

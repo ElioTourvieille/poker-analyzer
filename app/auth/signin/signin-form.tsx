@@ -11,6 +11,8 @@ import { useForm } from 'react-hook-form';
 import { signIn } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { DiscordLogoIcon } from '@radix-ui/react-icons';
+import { getErrorMessage } from '@/lib/error-translations';
 
 export default function SigninForm() {
   const router = useRouter();
@@ -36,17 +38,34 @@ export default function SigninForm() {
         onSuccess: () => {
             toast.dismiss()
             router.push('/auth')
+            router.refresh()
             toast.success('Connexion réussie')
         },
         onError: (error) => {
-            toast.error(error.error.message)
+          toast.dismiss()
+          const translatedMessage = getErrorMessage(error.error.code);
+          toast.error(translatedMessage || error.error.message)
         }
     })
   }
 
+  async function onDiscordSignIn() {
+     await signIn.social(
+      { 
+        provider: "discord", 
+        callbackURL: "/auth" 
+      }, {
+        onSuccess: () => {},
+        onError: (error) => {
+          toast.error(error.error.message)
+      }
+    })
+  }
+
   return (
+    <div className='flex flex-col items-center gap-4'>
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
         <FormField
           control={form.control}
           name="email"
@@ -73,8 +92,17 @@ export default function SigninForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Connexion</Button>
+        <Button type="submit" className='w-full'>Connexion</Button>
       </form>
+      <p className='text-sm text-muted-foreground'>Ou</p>
+      <Button 
+        variant="outline"
+        onClick={() => onDiscordSignIn()}
+        className="bg-[#5865F2] hover:bg-[#5865F2]/80 text-white"
+      >
+        <DiscordLogoIcon className='w-4 h-4 mr-2' /> Connexion avec Discord
+      </Button>
     </Form>
+    </div>
   )
 }

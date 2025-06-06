@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { signUp } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/error-translations';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -42,7 +43,9 @@ export default function SignupForm() {
             toast.success('Inscription réussie')
         },
         onError: (error) => {
-            toast.error(error.error.message)
+            toast.dismiss()
+            const translatedMessage = getErrorMessage(error.error.code);
+            toast.error(translatedMessage || error.error.message)
         }
     })
   }

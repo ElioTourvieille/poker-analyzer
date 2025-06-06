@@ -3,7 +3,7 @@
 import { authClient, useSession } from "@/lib/auth-client";
 import { LogOutIcon } from "lucide-react";
 import Link from "next/link";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -28,6 +28,7 @@ export default function AuthButton() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline">
           <Avatar>
+            {data.user.image ? <AvatarImage className="bg-blue-200" src={data.user.image} /> : null}
             <AvatarFallback>{data.user.email[0].toUpperCase()}</AvatarFallback>
           </Avatar>
           <p className="text-sm font-medium">{data.user.name}</p>

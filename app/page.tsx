@@ -10,7 +10,7 @@ export default function Home() {
   
   useEffect(() => {
     if (session) {
-      router.push('/auth');
+      router.replace('/auth');
     }
   }, [session, router]);
 
